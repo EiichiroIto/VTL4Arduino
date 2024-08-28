@@ -11,7 +11,7 @@ extern int allocate_memory(uint16_t size);
 void setup()
 {
   Serial.begin(115200);
-  Serial.println("VTL for Arduino");
+  Serial.print("VTL for Arduino\n");
   allocate_memory(memorysize);
   setup_execution(default_programtop, memorysize);
   set_randomseed(default_randomseed);
@@ -60,7 +60,7 @@ void put_asciivalue(uint8_t ascii)
   Serial.write(ascii);
 }
 
-void put_message(const char *str)
+void put_str(const char *str)
 {
   Serial.print(str);
 }

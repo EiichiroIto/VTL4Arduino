@@ -63,8 +63,7 @@ void set_variable(uint8_t ascii, uint16_t value)
 
 void put_crlf()
 {
-  put_asciivalue(CR);
-  put_asciivalue(LF);
+  put_str("\r\n");
 }
 
 void put_until(uint8_t ascii, Context *context)
@@ -91,7 +90,7 @@ void put_number(uint16_t value)
     position --;
     set_byte(position, c);
   } while (value);
-  new_context.position = position;
+  set_context(position, &new_context);
   put_until(0, &new_context);
 }
 
@@ -298,7 +297,7 @@ uint16_t factor_context(Context *context)
     tmp = linebuffer_address;
     get_line(tmp);
     Context new_context;
-    new_context.position = tmp;
+    set_context(tmp, &new_context);
     return expression_context(&new_context);
   }
   if (c == '$') {
@@ -349,7 +348,7 @@ void statement_context(Context *context)
   uint16_t address, value;
 
   if (context->position == 0) {
-    context->position = status.top_of_line + 3;
+    set_context(status.top_of_line + 3, context);
   }
   variable_context(context, &c, &address);
   inc_context(context);
@@ -377,11 +376,11 @@ void statement_context(Context *context)
   set_word(address, value);
   update_random(value);
 #ifdef DEBUG
-  put_message("address=");
+  put_str("address=");
   put_number(address);
-  put_message("value=");
+  put_str("value=");
   put_number(value);
-  put_message("\n");
+  put_str("\n");
 #endif
 }
 
@@ -398,26 +397,26 @@ void setup_execution(uint16_t program_top, uint16_t memory_size)
 void break_execution()
 {
   put_crlf();
-  put_message("BREAK");
+  put_str("BREAK");
   put_crlf();
   status.state = Prompted;
 }
 
 void raise_error(const char *str)
 {
-  put_message("ERROR: ");
-  put_message(str);
-  put_message("\n");
+  put_str("ERROR: ");
+  put_str(str);
+  put_str("\n");
   status.state = Prompted;
 }
 
 int execute_once()
 {
   uint16_t lineno, r2;
-  Context new_contex;
+  Context new_context;
 
-  new_contex.position = status.position;
-  statement_context(&new_contex);
+  set_context(status.position, &new_context);
+  statement_context(&new_context);
   lineno = get_current_lineno();
 	r2 = get_word(status.top_of_line);
   if (lineno == 0 || lineno == r2) {
@@ -443,7 +442,7 @@ int execute_once()
 void do_list()
 {
   Context new_context;
-  new_context.position = get_programtop();
+  set_context(get_programtop(), &new_context);
   uint16_t boundary = get_boundary();
   while (new_context.position < boundary) {
     uint16_t lineno = get_word(new_context.position);
@@ -463,7 +462,7 @@ void do_onecycle()
     //setup_();
     position = linebuffer_address + 2;
     get_line(position);
-    new_context.position = position;
+    set_context(position, &new_context);
     if (decimal_context(&new_context, &lineno)) {
       if (lineno == 0) {
         do_list();
@@ -482,8 +481,7 @@ void do_onecycle()
   if (status.state == Stepping) {
     if (execute_once()) {
       put_crlf();
-      put_asciivalue('O');
-      put_asciivalue('K');
+      put_str("OK");
       put_crlf();
       status.state = Prompted;
     } else {
