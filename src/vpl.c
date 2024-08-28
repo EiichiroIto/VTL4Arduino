@@ -335,7 +335,7 @@ uint16_t term_context(uint16_t value1, Context *context)
     return value1 / value2;
   }
   if (c == '=') {
-    return value1 = value2 ? 1 : 0;
+    return value1 == value2 ? 1 : 0;
   }
   if (c == '>') {
     return value1 >= value2 ? 1 : 0;
