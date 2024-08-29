@@ -218,6 +218,7 @@ void entry_lineno(uint16_t address, uint16_t lineno)
   }
   count = 3 + count_until(address, 0);
   if (!insert(count, cur)) {
+    raise_error(OUTOFMEMORY);
     return;
   }
   entry_line(address, cur, lineno);
@@ -417,13 +418,6 @@ void break_execution()
 
 void raise_error(enum Error error)
 {
-  put_asciivalue('E');
-  put_asciivalue('R');
-  put_asciivalue('R');
-  put_asciivalue('O');
-  put_asciivalue('R');
-  put_asciivalue(':');
-  put_asciivalue(' ');
   if (error == ZERODIV) {
     put_asciivalue('Z');
     put_asciivalue('E');
@@ -432,6 +426,21 @@ void raise_error(enum Error error)
     put_asciivalue('D');
     put_asciivalue('I');
     put_asciivalue('V');
+  } else if (error == OUTOFMEMORY) {
+    put_asciivalue('O');
+    put_asciivalue('U');
+    put_asciivalue('T');
+    put_asciivalue('O');
+    put_asciivalue('F');
+    put_asciivalue('M');
+    put_asciivalue('E');
+    put_asciivalue('M');
+  } else {
+    put_asciivalue('E');
+    put_asciivalue('R');
+    put_asciivalue('R');
+    put_asciivalue('O');
+    put_asciivalue('R');
   }
   put_crlf();
   status.state = Prompted;

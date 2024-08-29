@@ -11,7 +11,7 @@
 ```
 Advanced Memory Usage is available via "PlatformIO Home > Project Inspect"
 RAM:   [======    ]  60.3% (used 1234 bytes from 2048 bytes)
-Flash: [=         ]  12.3% (used 3958 bytes from 32256 bytes)
+Flash: [=         ]  12.3% (used 3962 bytes from 32256 bytes)
 ```
 
 メモリエリアには 1024 バイト確保していますが、システムで264バイト使用するため、プログラムでは760バイトほど使うことができます。

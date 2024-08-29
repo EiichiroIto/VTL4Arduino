@@ -3,7 +3,7 @@
 
 #include "common.h"
 
-enum Error {None, ZERODIV};
+enum Error {None, ZERODIV, OUTOFMEMORY};
 
 #ifdef __cplusplus
 extern "C" {
