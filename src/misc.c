@@ -16,12 +16,5 @@ uint16_t address_for(uint8_t ascii)
     return 208;
   }
   uint16_t address = pgm_read_byte_near(AddressTable + ascii - 32);
-#ifdef DEBUG
-  put_str("c=");
-  put_number(ascii);
-  put_str("\naddress=");
-  put_number(address);
-  put_str("\n");
-#endif
   return address;
 }

@@ -51,16 +51,5 @@ uint8_t get_asciivalue()
 
 void put_asciivalue(uint8_t ascii)
 {
-#ifdef DEBUG
-  char hex[] = "0123456789ABCDEF";
-  Serial.write(hex[ascii >> 4]);
-  Serial.write(hex[ascii % 0x0F]);
-  Serial.write(' ');
-#endif
   Serial.write(ascii);
-}
-
-void put_str(const char *str)
-{
-  Serial.print(str);
 }

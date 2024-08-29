@@ -9,7 +9,6 @@ extern "C" {
   uint16_t address_for(uint8_t ascii);
   uint8_t get_asciivalue();
   void put_asciivalue(uint8_t ascii);
-  void put_str(const char *str);
 
 #ifdef __cplusplus
 };

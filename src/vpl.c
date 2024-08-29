@@ -63,7 +63,8 @@ void set_variable(uint8_t ascii, uint16_t value)
 
 void put_crlf()
 {
-  put_str("\r\n");
+  put_asciivalue('\r');
+  put_asciivalue('\n');
 }
 
 void put_until(uint8_t ascii, Context *context)
@@ -163,7 +164,7 @@ uint16_t delete_lineno(uint16_t lineno)
     return cur;
   }
   src = next_line(cur);
-	boundary = get_boundary();
+  boundary = get_boundary();
   dst = cur;
   while (src != boundary) {
     copy_byte(src, dst);
@@ -171,7 +172,7 @@ uint16_t delete_lineno(uint16_t lineno)
     dst ++;
   }
   set_boundary(dst);
-	return cur;
+  return cur;
 }
 
 void entry_line(uint16_t src, uint16_t dst, uint16_t lineno)
@@ -202,7 +203,7 @@ int insert(uint16_t count, uint16_t address)
     src --;
     copy_byte(src, boundary);
   }
-	return 1;
+  return 1;
 }
 
 void entry_lineno(uint16_t address, uint16_t lineno)
@@ -237,6 +238,14 @@ void update_random(uint16_t value)
 
 /* parsing */
 
+int is_digit(uint8_t c)
+{
+  if (c >= '0' && c <= '9') {
+    return 1;
+  }
+  return 0;
+}
+
 int decimal_context(Context *context, uint16_t *value)
 {
   uint16_t number = 0;
@@ -270,7 +279,8 @@ uint16_t expression_context(Context *context)
 
 void variable_context(Context *context, uint8_t *pc, uint16_t *paddress)
 {
-	uint8_t c = get_byte_context(context);
+  uint8_t c = get_byte_context(context);
+  *pc = c;
   inc_context(context);
   if (c == ':') {
     uint16_t value = expression_context(context);
@@ -278,7 +288,6 @@ void variable_context(Context *context, uint8_t *pc, uint16_t *paddress)
   } else {
     *paddress = address_for(c);
   }
-  *pc = c;
 }
 
 uint16_t factor_context(Context *context)
@@ -327,7 +336,7 @@ uint16_t term_context(uint16_t value1, Context *context)
   }
   if (c == '/') {
     if (value2 == 0) {
-      raise_error("ZERO DIVIDE");
+      raise_error(ZERODIV);
       return 0;
     }
     set_word(remainder_address, value1 % value2);
@@ -352,11 +361,11 @@ void statement_context(Context *context)
   }
   variable_context(context, &c, &address);
   inc_context(context);
-	c2 = get_byte_context(context);
+  c2 = get_byte_context(context);
   if (c2 == '"') {
     inc_context(context);
     put_until('"', context);
-  	c2 = get_byte_context(context);
+    c2 = get_byte_context(context);
     if (c2 == ';') {
       inc_context(context);
     } else {
@@ -364,7 +373,7 @@ void statement_context(Context *context)
     }
     return;
   }
-	value = expression_context(context);
+  value = expression_context(context);
   if (c == '$') {
     put_asciivalue(value & 0xFF);
     return;
@@ -397,29 +406,47 @@ void setup_execution(uint16_t program_top, uint16_t memory_size)
 void break_execution()
 {
   put_crlf();
-  put_str("BREAK");
+  put_asciivalue('B');
+  put_asciivalue('R');
+  put_asciivalue('E');
+  put_asciivalue('A');
+  put_asciivalue('K');
   put_crlf();
   status.state = Prompted;
 }
 
-void raise_error(const char *str)
+void raise_error(enum Error error)
 {
-  put_str("ERROR: ");
-  put_str(str);
-  put_str("\n");
+  put_asciivalue('E');
+  put_asciivalue('R');
+  put_asciivalue('R');
+  put_asciivalue('O');
+  put_asciivalue('R');
+  put_asciivalue(':');
+  put_asciivalue(' ');
+  if (error == ZERODIV) {
+    put_asciivalue('Z');
+    put_asciivalue('E');
+    put_asciivalue('R');
+    put_asciivalue('O');
+    put_asciivalue('D');
+    put_asciivalue('I');
+    put_asciivalue('V');
+  }
+  put_crlf();
   status.state = Prompted;
 }
 
 int execute_once()
 {
-  uint16_t lineno, r2;
+  uint16_t lineno, r;
   Context new_context;
 
   set_context(status.position, &new_context);
   statement_context(&new_context);
   lineno = get_current_lineno();
-	r2 = get_word(status.top_of_line);
-  if (lineno == 0 || lineno == r2) {
+  r = get_word(status.top_of_line);
+  if (lineno == 0 || lineno == r) {
     if (status.top_of_line == linebuffer_address) {
       return 1;
     }
@@ -459,7 +486,6 @@ void do_onecycle()
   uint16_t position, lineno;
   Context new_context;
   if (status.state == Prompted) {
-    //setup_();
     position = linebuffer_address + 2;
     get_line(position);
     set_context(position, &new_context);
@@ -481,14 +507,13 @@ void do_onecycle()
   if (status.state == Stepping) {
     if (execute_once()) {
       put_crlf();
-      put_str("OK");
+      put_asciivalue('O');
+      put_asciivalue('K');
       put_crlf();
       status.state = Prompted;
     } else {
       lineno = get_word(status.top_of_line);
       set_current_lineno(lineno);
     }
-    return;
   }
-  raise_error("do_onecycle");
 }

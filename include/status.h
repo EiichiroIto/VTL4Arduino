@@ -6,7 +6,7 @@
 typedef struct {
   enum {Prompted, Stepping} state;
   uint16_t top_of_line;
-  uint8_t position;
+  uint16_t position;
 } Status;
 
 void setup_status(Status *status);
